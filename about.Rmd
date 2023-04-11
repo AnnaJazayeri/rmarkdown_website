@@ -1,0 +1,14 @@
+---
+title: "about"
+output: html_document
+date: "2023-04-11"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Interactive Web pages and Dashboards
+
+We, Ran Arino; Zubeka Dane Dang; Solmaz Heidar Nassab; Anna Jazayeri , declare that the attached assignment is our own work in accordance with the Seneca Academic Policy. We have not copied any part of this assignment, manually or electronically, from any other source including web sites, unless specified as references. We have not distributed our work to other students.
+
