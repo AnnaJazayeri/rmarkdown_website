@@ -2,12 +2,9 @@
 title: "Interactive Dashboard"
 output: 
   flexdashboard::flex_dashboard:
-    orientation: rows
-    vertical_layout: fill
+    vertical_layout: scroll
 runtime: shiny
 ---
-
-
 
 ```{r setup, include=FALSE}
 library(flexdashboard)
@@ -39,23 +36,23 @@ mydata <- mydata %>% mutate(Sex = ifelse(Sex == "MALE", "MALE", "FEMALE"))
 
 ```
 
+Inputs {.sidebar}
+```{r}
+# shiny inputes defines here
+selectInput("selected_island", "Select Island:", choices = c("All", unique(mydata$Island)))
+sliderInput("body_mass_range", "Select Body Mass (g) Range:",
+            min = min(mydata$`Body Mass (g)`),
+            max = max(mydata$`Body Mass (g)`),
+            value = c(min(mydata$`Body Mass (g)`), max(mydata$`Body Mass (g)`)))
+
+```
 
 
-Page 1
-======================================================================
-
-Row {.sidebar}
------------------------------------------------------------------------
-
-### Chart 1: Bar chart of penguin species counts by Island:
+### Chart 1: Bar chart of penguin species counts by Island: {.sidebar}
 
 ```{r}
-# create a dropdown menu for island selection
-selectInput("selected_island", "Select Island:", choices = c("All", unique(mydata$Island)))
-
 # create a reactive bar chart based on the selected island
 output$bar_chart <- renderPlot({
-  # filter the data by the selected island
   if (input$selected_island != "All") {
     data_filtered <- mydata %>% filter(Island == input$selected_island)
   } else {
@@ -74,13 +71,8 @@ plotOutput("bar_chart")
 ```
 
 
-### Chart 2: Scatter plot of culmen length and body mass by sex:
+### Chart 2: Scatter plot of culmen length and body mass by sex: {.sidebar}
 ```{r}
-# create a slider for selecting a range of body mass values
-sliderInput("body_mass_range", "Select Body Mass (g) Range:",
-            min = min(mydata$`Body Mass (g)`),
-            max = max(mydata$`Body Mass (g)`),
-            value = c(min(mydata$`Body Mass (g)`), max(mydata$`Body Mass (g)`)))
 
 # create a reactive scatter plot based on the selected body mass range
 output$scatter_plot <- renderPlot({
@@ -101,121 +93,109 @@ plotOutput("scatter_plot")
 ```
 
 
-Page 2
-======================================================================
-Row 
------------------------------------------------------------------------
-
-### Chart 3: Scatter plot of culmen length and body mass by species:
+### Chart 3: Scatter plot of culmen length and body mass by species: {.sidebar}
 
 ```{r}
-ggplot(mydata, aes(x = `Culmen Length (mm)`, y = `Body Mass (g)`, color = Species)) +
-  geom_point(alpha = 0.7) +
-  geom_smooth(method = "lm", se = FALSE) +
-  labs(title = "Relationship between Culmen Length and Body Mass by Species", x = "Culmen Length (mm)", y = "Body Mass (g)", color = "Species")
+output$scatter_plot_species <- renderPlot({
+  ggplot(mydata, aes(x = `Culmen Length (mm)`, y = `Body Mass (g)`, color = Species)) +
+    geom_point(alpha = 0.7) +
+    geom_smooth(method = "lm", se = FALSE) +
+    labs(title = "Relationship between Culmen Length and Body Mass by Species", x = "Culmen Length (mm)", y = "Body Mass (g)", color = "Species")
+})
+
+plotOutput("scatter_plot_species")
+
 ```
 
 
-### Chart 4: Plot of relationship between culmen length and culmen depth in different species.
+### Chart 4: Plot of relationship between culmen length and culmen depth in different species. {.sidebar}
 
 ```{r}
-ggplot(mydata, aes(x = `Culmen Length (mm)`, y = `Culmen Depth (mm)`, color = Species)) +
-  geom_point(alpha = 0.7) +
-  geom_smooth(method = "lm", se = FALSE) +
-  labs(title = "Relationship between Culmen Length and Depth by Species", x = "Culmen Length (mm)", y = "Culmen Depth (mm)", color = "Species")
+output$scatter_plot_culmen_length_depth <- renderPlot({
+  ggplot(mydata, aes(x = `Culmen Length (mm)`, y = `Culmen Depth (mm)`, color = Species)) +
+    geom_point(alpha = 0.7) +
+    geom_smooth(method = "lm", se = FALSE) +
+    labs(title = "Relationship between Culmen Length and Depth by Species", x = "Culmen Length (mm)", y = "Culmen Depth (mm)", color = "Species")
+})
+plotOutput("scatter_plot_culmen_length_depth")
 ```
 
 
-Page 3
-======================================================================
-
-Row
------------------------------------------------------------------------
 
 ### Chart 5: plot of changing the "Culmen Depth (mm)" by Island over time: {.storyboard}
 ```{r, fig.width=10, fig.height=7}
 library(scales)
-
-# convert Date Egg column to date format
-mydata$`Date Egg` <- as.Date(mydata$`Date Egg`)
-
-ggplot(mydata, aes(x = `Date Egg`, y = `Culmen Depth (mm)`)) +
-  geom_point(alpha = 0.2) +
-  geom_smooth() +
-  labs(title = "Trend of Culmen Depth (mm) by Island over Time", x = "Date", y = "Culmen Depth (mm)") +
-  facet_grid(. ~ Island) +
-  scale_x_date(date_breaks = "1 year", date_labels = "%Y")
+output$scatter_plot_culmen_depth_by_island <- renderPlot({
+  mydata$`Date Egg` <- as.Date(mydata$`Date Egg`)
+  ggplot(mydata, aes(x = `Date Egg`, y = `Culmen Depth (mm)`)) +
+    geom_point(alpha = 0.2) +
+    geom_smooth() +
+    labs(title = "Trend of Culmen Depth (mm) by Island over Time", x = "Date", y = "Culmen Depth (mm)") +
+    facet_grid(. ~ Island) +
+    scale_x_date(date_breaks = "1 year", date_labels = "%Y")
+})
+plotOutput("scatter_plot_culmen_depth_by_island")
 
 ```
 
 
-Page 4
-======================================================================
-
-Row
------------------------------------------------------------------------
-
-### Chart 6: Visualization for exploring the relationship between body mass and flipper length.
+### Chart 6: Visualization for exploring the relationship between body mass and flipper length. {.sidebar}
 ```{r}
 # create scatter plot of body mass vs. flipper length
-ggplot(mydata, aes(x = `Flipper Length (mm)`, y = `Body Mass (g)`, color = Species)) +
-  geom_point(size = 2) +
-  labs(x = "Flipper Length (mm)", y = "Body Mass (g)", color = "Species") +
-  ggtitle("Body Mass vs. Flipper Length by Species")
+output$scatter_plot_flipper_length <- renderPlot({
+  ggplot(mydata, aes(x = `Flipper Length (mm)`, y = `Body Mass (g)`, color = Species)) +
+    geom_point(size = 2) +
+    labs(x = "Flipper Length (mm)", y = "Body Mass (g)", color = "Species") +
+    ggtitle("Body Mass vs. Flipper Length by Species")
+})
+plotOutput("scatter_plot_flipper_length")
 ```
 
 
-### Chart 7: Visualization for exploring the trend of culmen length by penguin species and sex over time.
+### Chart 7: Visualization for exploring the trend of culmen length by penguin species and sex over time. {.sidebar}
 ```{r}
 library(scales)
 library(stringr)
-
-# convert Date Egg column to date format
-mydata$`Date Egg` <- as.Date(mydata$`Date Egg`)
-
-# extract first word of species names
-mydata$short_species <- str_extract(mydata$Species, "^\\w+")
-
-# create scatter plot of culmen length vs. year, faceted by species and sex
-ggplot(mydata, aes(x = `Date Egg`, y = `Culmen Length (mm)`, color = Sex)) +
-  geom_point(alpha = 0.5) +
-  geom_smooth(se = FALSE) +
-  facet_grid(short_species ~ ., labeller = label_parsed) +
-  labs(x = "Year", y = "Culmen Length (mm)", color = "Sex") +
-  ggtitle("Trend of Culmen Length by Species and Sex over Time") +
-  scale_x_date(date_breaks = "3 months", date_labels = "%b %Y")
-```
-
-
-Page 5
-======================================================================
-
-
-Row
------------------------------------------------------------------------
-
-### Chart 8: Relationship between Body Mass and Delta 15 N
-```{r}
-ggplot(mydata, aes(x = `Body Mass (g)`, y = `Delta 15 N (o/oo)`)) +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE) +
-  labs(x = "Body Mass (g)", y = "Delta 15 N (o/oo)", 
-       title = "Relationship between Body Mass and Delta 15 N") +
-  theme_bw()
-
+output$scatter_plot_culmen_length_trend <- renderPlot({
+  mydata$short_species <- stringr::str_extract(mydata$Species, "^\\w+")
+  ggplot(mydata, aes(x = `Date Egg`, y = `Culmen Length (mm)`, color = Sex)) +
+    geom_point(alpha = 0.5) +
+    geom_smooth(se = FALSE) +
+    facet_grid(short_species ~ ., labeller = label_parsed) +
+    labs(x = "Year", y = "Culmen Length (mm)", color = "Sex") +
+    ggtitle("Trend of Culmen Length by Species and Sex over Time") +
+    scale_x_date(date_breaks = "3 months", date_labels = "%b %Y")
+})
+plotOutput("scatter_plot_culmen_length_trend")
 ```
 
 
 
-### Chart 9: Relationship between Body Mass and Delta 13 C (o/oo)
+### Chart 8: Relationship between Body Mass and Delta 15 N {.sidebar}
 ```{r}
-library(ggplot2)
+output$scatter_plot_body_mass_delta_15_n <- renderPlot({
+  ggplot(mydata, aes(x = `Body Mass (g)`, y = `Delta 15 N (o/oo)`)) +
+    geom_point() +
+    geom_smooth(method = "lm", se = FALSE) +
+    labs(x = "Body Mass (g)", y = "Delta 15 N (o/oo)", 
+         title = "Relationship between Body Mass and Delta 15 N") +
+    theme_bw()
+})
+plotOutput("scatter_plot_body_mass_delta_15_n")
+```
 
-ggplot(mydata, aes(x = `Body Mass (g)`, y = `Delta 13 C (o/oo)`)) +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE) +
-  labs(x = "Body Mass (g)", y = "Delta 13 C (o/oo)", 
-       title = "Relationship between Body Mass and Delta 13 C (o/oo)") +
-  theme_bw()
+
+
+### Chart 9: Relationship between Body Mass and Delta 13 C (o/oo) {.sidebar}
+```{r}
+output$scatter_plot_body_mass_delta_13_c <- renderPlot({
+  ggplot(mydata, aes(x = `Body Mass (g)`, y = `Delta 13 C (o/oo)`)) +
+    geom_point() +
+    geom_smooth(method = "lm", se = FALSE) +
+    labs(x = "Body Mass (g)", y = "Delta 13 C (o/oo)", 
+         title = "Relationship between Body Mass and Delta 13 C (o/oo)") +
+    theme_bw()
+})
+plotOutput("scatter_plot_body_mass_delta_13_c")
 ```
 

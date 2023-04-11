@@ -1,0 +1,11 @@
+name: rmarkdown_website
+title:
+username:
+account: anna-jazayeri
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 8821157
+bundleId: 7077043
+url: https://anna-jazayeri.shinyapps.io/rmarkdown_website/
+when: 1681244531.11193
+lastSyncTime: 1681244531.11194
